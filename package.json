@@ -1,0 +1,8 @@
+{
+  "name": "leaderboard-graphql",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:cristianossd/leaderboard-graphql.git",
+  "author": "Cristiano Santos <cristianossd@gmail.com>",
+  "license": "MIT"
+}
