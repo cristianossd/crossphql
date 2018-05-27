@@ -1,0 +1,29 @@
+type Query {
+  info: String!
+  feed: [Team!]!
+  team(name: String!): Team
+}
+
+type Mutation {
+  newTeam(name: String!, category: String!, members: [String!]!): Team!
+  updateTeam(name: String!, category: String, finalScore: Int):  Team!
+  deleteTeam(name: String!): Team!
+}
+
+type Team {
+  id: ID!
+  name: String!
+  category: String!
+  members: [String!]!
+  events: [Event]
+  finalScore: Int
+}
+
+type Event {
+  id: ID!
+  order: Int!
+  time: String
+  reps: Int
+  weight: Int
+  ranking: Int
+}
