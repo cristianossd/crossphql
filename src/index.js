@@ -1,61 +1,40 @@
 const { GraphQLServer } = require('graphql-yoga');
-const _ = require('lodash');
-
-let teams = [{
-  id: 'team-0',
-  name: 'Maral Team',
-  category: 'RX',
-  members: ['Cristiano'],
-}];
-
-let idCount = teams.length;
+const { Prisma } = require('prisma-binding');
 
 const resolvers = {
   Query: {
     info: () => `This is the API of custom crossfit leaderboard`,
     feed: () => teams,
-    team: (root, args) => {
-      return _.find(teams, (t) => t.name === args.name)
+    team: (root, args, context, info) => {
+      return context.db.query.teams({}, info)
     },
   },
 
   Mutation: {
-    newTeam: (root, args) => {
-      const team = {
-        id: `team-${idCount++}`,
-        name: args.name,
-        category: args.category,
-        members: args.members,
-      };
-
-      teams.push(team);
-      return team;
+    createTeam: (root, args, context, info) => {
+      return context.db.mutation.createLink({
+        data: {
+          name: args.name,
+          category: args.category,
+          members: args.members,
+        },
+      }, info);
     },
-
-    updateTeam: (root, args) => {
-      const index = _.findIndex(teams, (t) => t.name === args.name);
-      teams[index].category = args.category || teams[index].category;
-      teams[index].finalScore = args.finalScore || teams[index].finalScore;
-
-      return teams[index];
-    },
-
-    deleteTeam: (root, { name }) => {
-      const deleted = _.remove(teams, (t) => t.name === name);
-      return _.head(deleted);
-    },
-  },
-
-  Team: {
-    id: (root) => root.id,
-    name: (root) => root.name,
-    category: (root) => root.category,
-    members: (root) => root.members,
   },
 };
 
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',
   resolvers,
+  context: req => ({
+    ...req,
+    db: new Prisma({
+      typeDefs: 'src/generated/prisma.graphql',
+      endpoint: 'https://us1.prisma.sh/public-bigpalm-216/leaderboard-graphql/dev',
+      secret: 'd41d8cd98f00b204e9800998ecf8427e',
+      debug: true,
+    }),
+  }),
 });
+
 server.start(() => console.log(`Server is running on http://localhost:4000`));

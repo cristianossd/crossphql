@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "playground": "node_modules/.bin/graphql playground"
   },
   "repository": "git@github.com:cristianossd/leaderboard-graphql.git",
   "author": "Cristiano Santos <cristianossd@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "graphql-yoga": "1.14.3",
-    "lodash": "4.17.10"
+    "prisma-binding": "2.0.2"
+  },
+  "devDependencies": {
+    "graphql-cli": "^2.16.0",
+    "prisma": "1.6.1"
   }
 }

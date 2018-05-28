@@ -1,3 +1,6 @@
+# import Event from "./generated/prisma.graphql"
+# import Team from "./generated/prisma.graphql"
+
 type Query {
   info: String!
   feed: [Team!]!
@@ -5,25 +8,5 @@ type Query {
 }
 
 type Mutation {
-  newTeam(name: String!, category: String!, members: [String!]!): Team!
-  updateTeam(name: String!, category: String, finalScore: Int):  Team!
-  deleteTeam(name: String!): Team!
-}
-
-type Team {
-  id: ID!
-  name: String!
-  category: String!
-  members: [String!]!
-  events: [Event]
-  finalScore: Int
-}
-
-type Event {
-  id: ID!
-  order: Int!
-  time: String
-  reps: Int
-  weight: Int
-  ranking: Int
+  createTeam(name: String!, category: String!, members: [String!]!): Team!
 }

@@ -1,0 +1,19 @@
+type Team {
+  id: ID! @unique
+  name: String! @unique
+  category: String!
+  members: [String!]!
+  events: [Event!]!
+  finalScore: Int
+  createdAt: DateTime!
+}
+
+type Event {
+  id: ID! @unique
+  order: Int!
+  time: String
+  reps: Int
+  weight: Int
+  ranking: Int
+  createdAt: DateTime!
+}
