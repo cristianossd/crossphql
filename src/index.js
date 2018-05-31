@@ -1,27 +1,12 @@
 const { GraphQLServer } = require('graphql-yoga');
 const { Prisma } = require('prisma-binding');
 
-const resolvers = {
-  Query: {
-    info: () => `This is the API of custom crossfit leaderboard`,
-    team: (root, args, context, info) => {
-      return context.db.query.team({
-        where: { name: args.name },
-      }, info);
-    },
-  },
+const Query = require('./resolvers/Query');
+const Mutation = require('./resolvers/Mutation');
 
-  Mutation: {
-    createTeam: (root, args, context, info) => {
-      return context.db.mutation.createTeam({
-        data: {
-          name: args.name,
-          category: args.category,
-          members: args.members,
-        },
-      }, info);
-    },
-  },
+const resolvers = {
+  Query,
+  Mutation,
 };
 
 const server = new GraphQLServer({
