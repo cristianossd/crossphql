@@ -7,6 +7,7 @@
 
 type Event implements Node {
   id: ID!
+  team: String!
   order: Int!
   time: String
   reps: Int
@@ -19,8 +20,7 @@ type Team implements Node {
   id: ID!
   name: String!
   category: String!
-  members: [String!]
-  events(where: EventWhereInput, orderBy: EventOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Event!]
+  members: String!
   finalScore: Int
   createdAt: DateTime!
 }
@@ -63,16 +63,12 @@ type EventConnection {
 }
 
 input EventCreateInput {
+  team: String!
   order: Int!
   time: String
   reps: Int
   weight: Int
   ranking: Int
-}
-
-input EventCreateManyInput {
-  create: [EventCreateInput!]
-  connect: [EventWhereUniqueInput!]
 }
 
 """
@@ -92,6 +88,8 @@ type EventEdge {
 enum EventOrderByInput {
   id_ASC
   id_DESC
+  team_ASC
+  team_DESC
   order_ASC
   order_DESC
   time_ASC
@@ -110,6 +108,7 @@ enum EventOrderByInput {
 
 type EventPreviousValues {
   id: ID!
+  team: String!
   order: Int!
   time: String
   reps: Int
@@ -157,40 +156,13 @@ input EventSubscriptionWhereInput {
   node: EventWhereInput
 }
 
-input EventUpdateDataInput {
-  order: Int
-  time: String
-  reps: Int
-  weight: Int
-  ranking: Int
-}
-
 input EventUpdateInput {
+  team: String
   order: Int
   time: String
   reps: Int
   weight: Int
   ranking: Int
-}
-
-input EventUpdateManyInput {
-  create: [EventCreateInput!]
-  connect: [EventWhereUniqueInput!]
-  disconnect: [EventWhereUniqueInput!]
-  delete: [EventWhereUniqueInput!]
-  update: [EventUpdateWithWhereUniqueNestedInput!]
-  upsert: [EventUpsertWithWhereUniqueNestedInput!]
-}
-
-input EventUpdateWithWhereUniqueNestedInput {
-  where: EventWhereUniqueInput!
-  data: EventUpdateDataInput!
-}
-
-input EventUpsertWithWhereUniqueNestedInput {
-  where: EventWhereUniqueInput!
-  update: EventUpdateDataInput!
-  create: EventCreateInput!
 }
 
 input EventWhereInput {
@@ -259,6 +231,59 @@ input EventWhereInput {
   All values not ending with the given string.
   """
   id_not_ends_with: ID
+  team: String
+  """
+  All values that are not equal to given value.
+  """
+  team_not: String
+  """
+  All values that are contained in given list.
+  """
+  team_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  team_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  team_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  team_lte: String
+  """
+  All values greater than the given value.
+  """
+  team_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  team_gte: String
+  """
+  All values containing the given string.
+  """
+  team_contains: String
+  """
+  All values not containing the given string.
+  """
+  team_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  team_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  team_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  team_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  team_not_ends_with: String
   order: Int
   """
   All values that are not equal to given value.
@@ -561,13 +586,8 @@ type TeamConnection {
 input TeamCreateInput {
   name: String!
   category: String!
+  members: String!
   finalScore: Int
-  members: TeamCreatemembersInput
-  events: EventCreateManyInput
-}
-
-input TeamCreatemembersInput {
-  set: [String!]
 }
 
 """
@@ -591,6 +611,8 @@ enum TeamOrderByInput {
   name_DESC
   category_ASC
   category_DESC
+  members_ASC
+  members_DESC
   finalScore_ASC
   finalScore_DESC
   createdAt_ASC
@@ -603,7 +625,7 @@ type TeamPreviousValues {
   id: ID!
   name: String!
   category: String!
-  members: [String!]
+  members: String!
   finalScore: Int
   createdAt: DateTime!
 }
@@ -650,13 +672,8 @@ input TeamSubscriptionWhereInput {
 input TeamUpdateInput {
   name: String
   category: String
+  members: String
   finalScore: Int
-  members: TeamUpdatemembersInput
-  events: EventUpdateManyInput
-}
-
-input TeamUpdatemembersInput {
-  set: [String!]
 }
 
 input TeamWhereInput {
@@ -831,6 +848,59 @@ input TeamWhereInput {
   All values not ending with the given string.
   """
   category_not_ends_with: String
+  members: String
+  """
+  All values that are not equal to given value.
+  """
+  members_not: String
+  """
+  All values that are contained in given list.
+  """
+  members_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  members_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  members_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  members_lte: String
+  """
+  All values greater than the given value.
+  """
+  members_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  members_gte: String
+  """
+  All values containing the given string.
+  """
+  members_contains: String
+  """
+  All values not containing the given string.
+  """
+  members_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  members_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  members_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  members_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  members_not_ends_with: String
   finalScore: Int
   """
   All values that are not equal to given value.
@@ -889,9 +959,6 @@ input TeamWhereInput {
   All values greater than or equal the given value.
   """
   createdAt_gte: DateTime
-  events_every: EventWhereInput
-  events_some: EventWhereInput
-  events_none: EventWhereInput
 }
 
 input TeamWhereUniqueInput {

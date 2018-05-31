@@ -2,14 +2,14 @@ type Team {
   id: ID! @unique
   name: String! @unique
   category: String!
-  members: [String!]!
-  events: [Event!]!
+  members: String!
   finalScore: Int
   createdAt: DateTime!
 }
 
 type Event {
   id: ID! @unique
+  team: String!
   order: Int!
   time: String
   reps: Int

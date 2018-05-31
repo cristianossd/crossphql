@@ -4,15 +4,16 @@ const { Prisma } = require('prisma-binding');
 const resolvers = {
   Query: {
     info: () => `This is the API of custom crossfit leaderboard`,
-    feed: () => teams,
     team: (root, args, context, info) => {
-      return context.db.query.teams({}, info)
+      return context.db.query.team({
+        where: { name: args.name },
+      }, info);
     },
   },
 
   Mutation: {
     createTeam: (root, args, context, info) => {
-      return context.db.mutation.createLink({
+      return context.db.mutation.createTeam({
         data: {
           name: args.name,
           category: args.category,

@@ -3,10 +3,13 @@
 
 type Query {
   info: String!
-  feed: [Team!]!
   team(name: String!): Team
 }
 
 type Mutation {
-  createTeam(name: String!, category: String!, members: [String!]!): Team!
+  createTeam(
+    name: String!,
+    category: String!,
+    members: String!,
+  ): Team!
 }
