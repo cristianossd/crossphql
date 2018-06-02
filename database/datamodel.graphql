@@ -11,7 +11,7 @@ type Team {
 type Event {
   id: ID! @unique
   fromTeam: Team
-  order: Int! @unique
+  order: Int!
   time: String
   reps: Int
   weight: Int

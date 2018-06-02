@@ -10,8 +10,15 @@ type Query {
 }
 
 type Mutation {
+  # User
   signup(email: String!, password: String!, name: String!): AuthPayload
   login(email: String!, password: String!): AuthPayload
-  createTeam(name: String!, category: String!, members: String!,): Team!
+  # Team
+  createTeam(name: String!, category: String!, members: String!): Team!
+  updateTeam(name: String!, category: String, members: String, finalScore: Int): Team!
+  deleteTeam(name: String!): Team
+  # Event
   createEvent(teamName: String!, order: Int!): Event
+  updateEvent(id: ID!, teamName: String, order: Int, time: String, reps: Int, weight: Int, ranking: Int): Event!
+  deleteEvent(id: ID!, teamName: String!): Event
 }

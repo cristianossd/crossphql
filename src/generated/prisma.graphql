@@ -655,7 +655,6 @@ input EventWhereInput {
 
 input EventWhereUniqueInput {
   id: ID
-  order: Int
 }
 
 """
