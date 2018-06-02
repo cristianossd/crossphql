@@ -38,6 +38,8 @@ const login = async (root, args, context, info) => {
 
 // Team
 const createTeam = async (root, args, context, info) => {
+  getUserId(context);
+
   return context.db.mutation.createTeam({
     data: {
       name: args.name,
@@ -48,6 +50,8 @@ const createTeam = async (root, args, context, info) => {
 };
 
 const updateTeam = async (root, args, context, info) => {
+  getUserId(context);
+
   return context.db.mutation.updateTeam({
     where: { name: args.name },
     data: args,
@@ -55,12 +59,16 @@ const updateTeam = async (root, args, context, info) => {
 };
 
 const deleteTeam = async (root, args, context, info) => {
+  getUserId(context);
+
   return context.db.mutation.deleteTeam({
     where: { name: args.name },
   }, info);
 };
 
 const setTeamsScore = async (root, args, context, info) => {
+  getUserId(context);
+
   const teams = await context.db.query.teams({
     where: {
       category: args.category,
@@ -90,6 +98,8 @@ const setTeamsScore = async (root, args, context, info) => {
 
 // Event
 const createEvent = async (root, args, context, info) => {
+  getUserId(context);
+
   const team = await context.db.query.team({
     where: { name: args.teamName },
   }, `{ id }`);
@@ -107,6 +117,8 @@ const createEvent = async (root, args, context, info) => {
 };
 
 const updateEvent = async (root, args, context, info) => {
+  getUserId(context);
+
   const team = await context.db.query.team({
     where: { name: args.teamName },
   }, `{ id }`);
@@ -126,6 +138,8 @@ const updateEvent = async (root, args, context, info) => {
 };
 
 const deleteEvent = async (root, args, context, info) => {
+  getUserId(context);
+
   const team = await context.db.query.team({
     where: { name: args.teamName },
   }, `{ id }`);
@@ -140,6 +154,8 @@ const deleteEvent = async (root, args, context, info) => {
 };
 
 const setEventRanking = async (root, args, context, info) => {
+  getUserId(context);
+
   const events = await context.db.query.events({
     where: {
       order: args.order,
