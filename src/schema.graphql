@@ -1,5 +1,7 @@
 # import Event from "./generated/prisma.graphql"
 # import Team from "./generated/prisma.graphql"
+# import User from "./generated/prisma.graphql"
+# import AuthPayload from "./generated/prisma.graphql"
 
 type Query {
   info: String!
@@ -8,6 +10,8 @@ type Query {
 }
 
 type Mutation {
+  signup(email: String!, password: String!, name: String!): AuthPayload
+  login(email: String!, password: String!): AuthPayload
   createTeam(name: String!, category: String!, members: String!,): Team!
   createEvent(teamName: String!, order: Int!): Event
 }

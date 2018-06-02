@@ -18,3 +18,15 @@ type Event {
   ranking: Int
   createdAt: DateTime!
 }
+
+type User {
+  id: ID! @unique
+  name: String!
+  email: String! @unique
+  password: String!
+}
+
+type AuthPayload {
+  token: String
+  user: User
+}
