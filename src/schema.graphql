@@ -6,6 +6,7 @@
 type Query {
   info: String!
   feed: [Team]
+  leaderboard(category: String!): [Team]
   team(name: String!): Team
 }
 
@@ -17,6 +18,7 @@ type Mutation {
   createTeam(name: String!, category: String!, members: String!): Team!
   updateTeam(name: String!, category: String, members: String, finalScore: Int): Team!
   deleteTeam(name: String!): Team
+  setTeamsScore(category: String!): String
   # Event
   createEvent(teamName: String!, order: Int!): Event
   updateEvent(id: ID!, teamName: String, order: Int, time: String, reps: Int, weight: Int, ranking: Int): Event!

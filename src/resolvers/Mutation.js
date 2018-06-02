@@ -60,6 +60,34 @@ const deleteTeam = async (root, args, context, info) => {
   }, info);
 };
 
+const setTeamsScore = async (root, args, context, info) => {
+  const teams = await context.db.query.teams({
+    where: {
+      category: args.category,
+    },
+  }, `{ id name finalScore events { ranking } }`);
+
+  const scoredTeams = teams.map(team => {
+    const finalScore = _.sumBy(team.events, (event) => event.ranking);
+    return {
+      id: team.id,
+      name: team.name,
+      finalScore: finalScore > 0 ? finalScore : 999,
+    };
+  });
+
+  await Promise.all(scoredTeams.map((team) => (
+    context.db.mutation.updateTeam({
+      where: { name: team.name },
+      data: { finalScore: team.finalScore },
+    }, `{ id finalScore }`)
+  ))).catch(err => {
+    throw new Error('Retry team final scores setup');
+  });
+
+  return `${args.category} ranking updated`
+};
+
 // Event
 const createEvent = async (root, args, context, info) => {
   const team = await context.db.query.team({
@@ -150,6 +178,7 @@ module.exports = {
   createTeam,
   updateTeam,
   deleteTeam,
+  setTeamsScore,
   createEvent,
   updateEvent,
   deleteEvent,
