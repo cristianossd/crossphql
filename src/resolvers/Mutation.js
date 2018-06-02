@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 const { APP_SECRET, getUserId } = require('../utils');
 
 // User
@@ -110,6 +111,39 @@ const deleteEvent = async (root, args, context, info) => {
   }, info);
 };
 
+const setEventRanking = async (root, args, context, info) => {
+  const events = await context.db.query.events({
+    where: {
+      order: args.order,
+      fromTeam: { category: args.category },
+    },
+  }, `{  id order time reps weight ranking fromTeam { category }}`);
+
+  const rankedEvents = _.sortBy(events, (event) => {
+    const { time, reps, weight } = event;
+
+    if (time) {
+      const [minutes, seconds] = time.split(':').map(unit => parseInt(unit, 10));
+      return (minutes*60 + seconds);
+    } else if (reps) {
+      return -reps;
+    } else if (weight) {
+      return -weight;
+    }
+  });
+
+  await Promise.all(rankedEvents.map((event, index) => (
+    context.db.mutation.updateEvent({
+      where: { id: event.id },
+      data: { ranking: index + 1 },
+    }, `{ id ranking }`)
+  ))).catch(err => {
+    throw new Error('Retry event ranking setup');
+  });
+
+  return `${args.category} ranking updated`
+};
+
 module.exports = {
   signup,
   login,
@@ -119,4 +153,5 @@ module.exports = {
   createEvent,
   updateEvent,
   deleteEvent,
+  setEventRanking,
 };

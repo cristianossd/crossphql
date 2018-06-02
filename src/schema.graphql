@@ -21,4 +21,5 @@ type Mutation {
   createEvent(teamName: String!, order: Int!): Event
   updateEvent(id: ID!, teamName: String, order: Int, time: String, reps: Int, weight: Int, ranking: Int): Event!
   deleteEvent(id: ID!, teamName: String!): Event
+  setEventRanking(category: String!, order: Int!): String
 }

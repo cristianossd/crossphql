@@ -1,8 +1,6 @@
-#service: leaderboard-graphql
-#stage: dev
+service: leaderboard-graphql
+stage: dev
 datamodel: datamodel.graphql
 secret: d41d8cd98f00b204e9800998ecf8427e
-#cluster: public-bigpalm-216/prisma-us1
+cluster: public-bigpalm-216/prisma-us1
 #endpoint: https://us1.prisma.sh/public-bigpalm-216/leaderboard-graphql/dev
-
-endpoint: https://us1.prisma.sh/public-bigpalm-216/leaderboard-graphql/dev
