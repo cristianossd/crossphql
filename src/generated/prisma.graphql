@@ -46,6 +46,10 @@ type AggregateEvent {
   count: Int!
 }
 
+type AggregateHidden {
+  count: Int!
+}
+
 type AggregateTeam {
   count: Int!
 }
@@ -657,6 +661,184 @@ input EventWhereUniqueInput {
   id: ID
 }
 
+type Hidden {
+  name: String!
+  flag: Boolean
+}
+
+"""
+A connection to a list of items.
+"""
+type HiddenConnection {
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  A list of edges.
+  """
+  edges: [HiddenEdge]!
+  aggregate: AggregateHidden!
+}
+
+input HiddenCreateInput {
+  name: String!
+  flag: Boolean
+}
+
+"""
+An edge in a connection.
+"""
+type HiddenEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: Hidden!
+  """
+  A cursor for use in pagination.
+  """
+  cursor: String!
+}
+
+enum HiddenOrderByInput {
+  name_ASC
+  name_DESC
+  flag_ASC
+  flag_DESC
+  id_ASC
+  id_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type HiddenPreviousValues {
+  name: String!
+  flag: Boolean
+}
+
+type HiddenSubscriptionPayload {
+  mutation: MutationType!
+  node: Hidden
+  updatedFields: [String!]
+  previousValues: HiddenPreviousValues
+}
+
+input HiddenSubscriptionWhereInput {
+  """
+  Logical AND on all given filters.
+  """
+  AND: [HiddenSubscriptionWhereInput!]
+  """
+  Logical OR on all given filters.
+  """
+  OR: [HiddenSubscriptionWhereInput!]
+  """
+  Logical NOT on all given filters combined by AND.
+  """
+  NOT: [HiddenSubscriptionWhereInput!]
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: HiddenWhereInput
+}
+
+input HiddenUpdateInput {
+  name: String
+  flag: Boolean
+}
+
+input HiddenWhereInput {
+  """
+  Logical AND on all given filters.
+  """
+  AND: [HiddenWhereInput!]
+  """
+  Logical OR on all given filters.
+  """
+  OR: [HiddenWhereInput!]
+  """
+  Logical NOT on all given filters combined by AND.
+  """
+  NOT: [HiddenWhereInput!]
+  name: String
+  """
+  All values that are not equal to given value.
+  """
+  name_not: String
+  """
+  All values that are contained in given list.
+  """
+  name_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  name_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  name_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  name_lte: String
+  """
+  All values greater than the given value.
+  """
+  name_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  name_gte: String
+  """
+  All values containing the given string.
+  """
+  name_contains: String
+  """
+  All values not containing the given string.
+  """
+  name_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  name_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  name_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  name_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  name_not_ends_with: String
+  flag: Boolean
+  """
+  All values that are not equal to given value.
+  """
+  flag_not: Boolean
+}
+
+input HiddenWhereUniqueInput {
+  name: String
+}
+
 """
 The `Long` scalar type represents non-fractional signed whole numeric values.
 Long can represent values between -(2^63) and 2^63 - 1.
@@ -668,23 +850,29 @@ type Mutation {
   createEvent(data: EventCreateInput!): Event!
   createUser(data: UserCreateInput!): User!
   createAuthPayload(data: AuthPayloadCreateInput!): AuthPayload!
+  createHidden(data: HiddenCreateInput!): Hidden!
   updateTeam(data: TeamUpdateInput!, where: TeamWhereUniqueInput!): Team
   updateEvent(data: EventUpdateInput!, where: EventWhereUniqueInput!): Event
   updateUser(data: UserUpdateInput!, where: UserWhereUniqueInput!): User
+  updateHidden(data: HiddenUpdateInput!, where: HiddenWhereUniqueInput!): Hidden
   deleteTeam(where: TeamWhereUniqueInput!): Team
   deleteEvent(where: EventWhereUniqueInput!): Event
   deleteUser(where: UserWhereUniqueInput!): User
+  deleteHidden(where: HiddenWhereUniqueInput!): Hidden
   upsertTeam(where: TeamWhereUniqueInput!, create: TeamCreateInput!, update: TeamUpdateInput!): Team!
   upsertEvent(where: EventWhereUniqueInput!, create: EventCreateInput!, update: EventUpdateInput!): Event!
   upsertUser(where: UserWhereUniqueInput!, create: UserCreateInput!, update: UserUpdateInput!): User!
+  upsertHidden(where: HiddenWhereUniqueInput!, create: HiddenCreateInput!, update: HiddenUpdateInput!): Hidden!
   updateManyTeams(data: TeamUpdateInput!, where: TeamWhereInput): BatchPayload!
   updateManyEvents(data: EventUpdateInput!, where: EventWhereInput): BatchPayload!
   updateManyUsers(data: UserUpdateInput!, where: UserWhereInput): BatchPayload!
   updateManyAuthPayloads(data: AuthPayloadUpdateInput!, where: AuthPayloadWhereInput): BatchPayload!
+  updateManyHiddens(data: HiddenUpdateInput!, where: HiddenWhereInput): BatchPayload!
   deleteManyTeams(where: TeamWhereInput): BatchPayload!
   deleteManyEvents(where: EventWhereInput): BatchPayload!
   deleteManyUsers(where: UserWhereInput): BatchPayload!
   deleteManyAuthPayloads(where: AuthPayloadWhereInput): BatchPayload!
+  deleteManyHiddens(where: HiddenWhereInput): BatchPayload!
 }
 
 enum MutationType {
@@ -730,13 +918,16 @@ type Query {
   events(where: EventWhereInput, orderBy: EventOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Event]!
   users(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [User]!
   authPayloads(where: AuthPayloadWhereInput, orderBy: AuthPayloadOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [AuthPayload]!
+  hiddens(where: HiddenWhereInput, orderBy: HiddenOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Hidden]!
   team(where: TeamWhereUniqueInput!): Team
   event(where: EventWhereUniqueInput!): Event
   user(where: UserWhereUniqueInput!): User
+  hidden(where: HiddenWhereUniqueInput!): Hidden
   teamsConnection(where: TeamWhereInput, orderBy: TeamOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): TeamConnection!
   eventsConnection(where: EventWhereInput, orderBy: EventOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): EventConnection!
   usersConnection(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): UserConnection!
   authPayloadsConnection(where: AuthPayloadWhereInput, orderBy: AuthPayloadOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): AuthPayloadConnection!
+  hiddensConnection(where: HiddenWhereInput, orderBy: HiddenOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): HiddenConnection!
   """
   Fetches an object given its ID
   """
@@ -751,6 +942,7 @@ type Subscription {
   event(where: EventSubscriptionWhereInput): EventSubscriptionPayload
   user(where: UserSubscriptionWhereInput): UserSubscriptionPayload
   authPayload(where: AuthPayloadSubscriptionWhereInput): AuthPayloadSubscriptionPayload
+  hidden(where: HiddenSubscriptionWhereInput): HiddenSubscriptionPayload
 }
 
 """

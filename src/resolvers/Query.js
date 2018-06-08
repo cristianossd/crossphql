@@ -19,9 +19,16 @@ const team = (root, args, context, info) => {
   }, info)
 };
 
+const hidden = (root, args, context, info) => {
+  return context.db.query.hidden({
+    where: { name: args.name },
+  }, info)
+};
+
 module.exports = {
   info,
   feed,
   leaderboard,
   team,
+  hidden,
 };

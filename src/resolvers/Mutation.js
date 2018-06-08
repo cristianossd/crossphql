@@ -188,6 +188,23 @@ const setEventRanking = async (root, args, context, info) => {
   return `${args.category} ranking updated`
 };
 
+// Hidden
+const createHidden = async (root, args, context, info) => {
+  return context.db.mutation.createHidden({
+    data: {
+      name: args.name,
+      flag: args.flag,
+    },
+  }, info);
+};
+
+const updateHidden = async (root, args, context, info) => {
+  return context.db.mutation.updateHidden({
+    where: { name: args.name },
+    data: { flag: args.flag },
+  }, info);
+};
+
 module.exports = {
   signup,
   login,
@@ -199,4 +216,6 @@ module.exports = {
   updateEvent,
   deleteEvent,
   setEventRanking,
+  createHidden,
+  updateHidden,
 };

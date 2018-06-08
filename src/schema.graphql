@@ -1,6 +1,7 @@
 # import Event from "./generated/prisma.graphql"
 # import Team from "./generated/prisma.graphql"
 # import User from "./generated/prisma.graphql"
+# import Hidden from "./generated/prisma.graphql"
 # import AuthPayload from "./generated/prisma.graphql"
 
 type Query {
@@ -8,6 +9,7 @@ type Query {
   feed: [Team]
   leaderboard(category: String!): [Team]
   team(name: String!): Team
+  hidden(name: String!): Hidden
 }
 
 type Mutation {
@@ -24,4 +26,7 @@ type Mutation {
   updateEvent(id: ID!, teamName: String, order: Int, time: String, reps: Int, weight: Int, ranking: Int): Event!
   deleteEvent(id: ID!, teamName: String!): Event
   setEventRanking(category: String!, order: Int!): String
+  # OmitResult
+  createHidden(name: String!, flag: Boolean!): Hidden
+  updateHidden(name: String!, flag: Boolean!): Hidden
 }

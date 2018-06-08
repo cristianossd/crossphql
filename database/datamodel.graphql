@@ -30,3 +30,8 @@ type AuthPayload {
   token: String
   user: User
 }
+
+type Hidden {
+  name: String! @unique
+  flag: Boolean
+}
