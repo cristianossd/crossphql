@@ -2,10 +2,14 @@
   "name": "leaderboard-graphql",
   "version": "1.0.0",
   "main": "src/index.js",
-  "engines" : {"node" : "8.10.0"},
+  "engines": {
+    "node": "8.10.0"
+  },
   "scripts": {
     "start": "node src/index.js",
-    "playground": "node_modules/.bin/graphql playground"
+    "playground": "node_modules/.bin/graphql playground",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "repository": "git@github.com:cristianossd/leaderboard-graphql.git",
   "author": "Cristiano Santos <cristianossd@gmail.com>",
@@ -19,7 +23,9 @@
     "prisma-binding": "2.0.2"
   },
   "devDependencies": {
+    "babel-jest": "^23.0.1",
     "graphql-cli": "^2.16.0",
+    "jest": "^23.1.0",
     "prisma": "1.6.1"
   }
 }
