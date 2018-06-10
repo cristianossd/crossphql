@@ -15,17 +15,17 @@
   "author": "Cristiano Santos <cristianossd@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bcrypt": "^2.0.1",
-    "bcryptjs": "^2.4.3",
+    "bcrypt": "2.0.1",
+    "bcryptjs": "2.4.3",
     "graphql-yoga": "1.14.3",
-    "jsonwebtoken": "^8.2.2",
-    "lodash": "^4.17.10",
+    "jsonwebtoken": "8.2.2",
+    "lodash": "4.17.10",
     "prisma-binding": "2.0.2"
   },
   "devDependencies": {
-    "babel-jest": "^23.0.1",
-    "graphql-cli": "^2.16.0",
-    "jest": "^23.1.0",
+    "babel-jest": "23.0.1",
+    "graphql-cli": "2.16.0",
+    "jest": "23.1.0",
     "prisma": "1.6.1"
   }
 }
