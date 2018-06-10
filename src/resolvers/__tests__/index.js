@@ -5,12 +5,13 @@ const { head } = require('lodash');
 const Query = require('../Query');
 const AuthPayload = require('../AuthPayload');
 const Mutation = require('../Mutation');
-const { APP_SECRET } = require('../../utils');
+const { APP_SECRET, getUserId } = require('../../utils');
 
 const TOKEN = '1fn9j983ef8923m89';
 const infoMock = `{ id }`;
 const hiddenMock = { flag: true };
-const userMock = { id: 1, token: TOKEN };
+const userMock = { id: 1, token: TOKEN, password: 'pass1234' };
+const teamMock = { name: 'team', category: 'RX', members: '' };
 const teamsMock = {
   data: {
     teams: [
@@ -31,6 +32,9 @@ const contextMock = {
 
     mutation: {
       createUser: jest.fn().mockReturnValue(userMock),
+      createTeam: jest.fn().mockReturnValue(teamMock),
+      updateTeam: jest.fn().mockReturnValue(teamMock),
+      deleteTeam: jest.fn().mockReturnValue(teamMock),
     },
   },
 };
@@ -41,11 +45,12 @@ jwt.sign.mockReturnValue(TOKEN);
 jest.mock('bcrypt');
 bcrypt.hash.mockResolvedValue('pass1234');
 
+jest.mock('../../utils');
+getUserId.mockReturnValue(true);
+
 describe('Query', () => {
   afterEach(() => {
-    contextMock.db.query.teams.mockClear();
-    contextMock.db.query.team.mockClear();
-    contextMock.db.query.hidden.mockClear();
+    jest.clearAllMocks();
   });
 
   it('should return query health check', () => {
@@ -102,7 +107,7 @@ describe('Query', () => {
 
 describe('AuthPayload', () => {
   afterEach(() => {
-    contextMock.db.query.user.mockClear();
+    jest.clearAllMocks();
   });
 
   it('should query user', () => {
@@ -118,24 +123,104 @@ describe('AuthPayload', () => {
 
 describe('Mutation', () => {
   afterEach(() => {
-    contextMock.db.mutation.createUser.mockClear();
+    jest.clearAllMocks();
   });
 
-  it('should signup', async () => {
-    const result = await Mutation.signup({}, {
-      email: 'cross@fit',
-      password: 'pass1234',
-    }, contextMock, infoMock);
+  describe('User', () => {
+    it('should signup', async () => {
+      const result = await Mutation.signup({}, {
+        email: 'cross@fit',
+        password: 'pass1234',
+      }, contextMock, infoMock);
 
-    expect(result).toEqual({
-      token: userMock.token,
-      user: userMock,
+      expect(result).toEqual({
+        token: userMock.token,
+        user: userMock,
+      });
+      expect(contextMock.db.mutation.createUser).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.createUser).toHaveBeenCalledWith({
+        data: { email: 'cross@fit', password: 'pass1234' },
+      }, infoMock);
+
+      expect(jwt.sign).toHaveBeenCalledWith({ userId: userMock.id }, APP_SECRET);
     });
-    expect(contextMock.db.mutation.createUser).toHaveBeenCalledTimes(1);
-    expect(contextMock.db.mutation.createUser).toHaveBeenCalledWith({
-      data: { email: 'cross@fit', password: 'pass1234' },
-    }, infoMock);
 
-    expect(jwt.sign).toHaveBeenCalledWith({ userId: userMock.id }, APP_SECRET);
+    it('should login an user', async () => {
+      bcrypt.compare.mockResolvedValue(true);
+
+      const result = await Mutation.login({}, {
+        email: 'cross@fit',
+        password: 'pass1234',
+      }, contextMock, infoMock);
+
+      expect(result).toEqual({
+        token: userMock.token,
+        user: userMock,
+      });
+      expect(contextMock.db.query.user).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.query.user).toHaveBeenCalledWith({
+        where: { email: 'cross@fit' },
+      }, `{ id password }`);
+      expect(bcrypt.compare).toHaveBeenCalledWith('pass1234', 'pass1234');
+    });
+
+    it('should throw error for user not found', async () => {
+      contextMock.db.query.user.mockReturnValue(null);
+      return await Mutation.login({}, {
+        email: 'cross@fit',
+        password: 'pass1234',
+      }, contextMock, infoMock).catch(e =>
+        expect(e).toEqual(new Error(`No such user found`))
+      );
+    });
+
+    it('should throw error for invalid password', async () => {
+      contextMock.db.query.user.mockReturnValue(userMock);
+      bcrypt.compare.mockResolvedValue(false);
+
+      return await Mutation.login({}, {
+        email: 'cross@fit',
+        password: 'pass1234',
+      }, contextMock, infoMock).catch(e =>
+        expect(e).toEqual(new Error(`Invalid password`))
+      );
+    });
+  });
+
+  describe('Team', () => {
+    it('should create a team', async () => {
+      const result = await Mutation.createTeam({}, teamMock, contextMock, infoMock);
+
+      expect(result).toEqual(teamMock);
+      expect(contextMock.db.mutation.createTeam).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.createTeam).toHaveBeenCalledWith({
+        data: {
+          name: teamMock.name,
+          category: teamMock.category,
+          members: teamMock.members,
+        },
+      }, infoMock);
+    });
+
+    it('should update a team', async () => {
+      const result = await Mutation.updateTeam({}, teamMock, contextMock, infoMock);
+
+      expect(result).toEqual(teamMock);
+      expect(contextMock.db.mutation.updateTeam).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.updateTeam).toHaveBeenCalledWith({
+        where: { name: teamMock.name },
+        data: teamMock,
+      }, infoMock);
+    });
+
+    it('should delete a team', async () => {
+      const result = await Mutation.deleteTeam({}, teamMock, contextMock, infoMock);
+
+      expect(result).toEqual(teamMock);
+      expect(contextMock.db.mutation.deleteTeam).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.deleteTeam).toHaveBeenCalledWith({
+        where: { name: teamMock.name },
+      }, infoMock);
+    });
   });
 });
