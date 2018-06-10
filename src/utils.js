@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
+
 const APP_SECRET = 'D41D8CD98F00B204E9800998ECF8427E';
 
-const getUserId = context => {
+const getUserId = (context) => {
   const Authorization = context.request.get('Authorization');
   if (Authorization) {
     const token = Authorization.replace('Bearer ', '');
@@ -9,7 +10,7 @@ const getUserId = context => {
     return userId;
   }
 
-  throw new Error(`Not authenticated`);
+  throw new Error('Not authenticated');
 };
 
 module.exports = {

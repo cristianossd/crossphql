@@ -11,6 +11,11 @@ build:
       code: yarn install --frozen-lockfile
 
     - script:
+      name: lint
+      code: |
+        yarn lint
+
+    - script:
       name: test
       code: |
         yarn test

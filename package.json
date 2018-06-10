@@ -9,7 +9,8 @@
     "start": "node src/index.js",
     "playground": "node_modules/.bin/graphql playground",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "lint": "eslint --ignore-pattern *.min.js src"
   },
   "repository": "git@github.com:cristianossd/leaderboard-graphql.git",
   "author": "Cristiano Santos <cristianossd@gmail.com>",
@@ -24,6 +25,11 @@
   },
   "devDependencies": {
     "babel-jest": "23.0.1",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.9.1",
     "graphql-cli": "2.16.0",
     "jest": "23.1.0",
     "prisma": "1.6.1"

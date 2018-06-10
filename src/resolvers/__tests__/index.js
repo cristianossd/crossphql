@@ -7,11 +7,15 @@ const Mutation = require('../Mutation');
 const { APP_SECRET, getUserId } = require('../../utils');
 
 const TOKEN = '1fn9j983ef8923m89';
-const infoMock = `{ id }`;
+const infoMock = '{ id }';
 const hiddenMock = { name: 'hiddenResult', flag: true };
 const userMock = { id: 1, token: TOKEN, password: 'pass1234' };
-const eventMock = { id: 2, order: 1, ranking: 1, reps: 120 };
-const teamMock = { name: 'team', category: 'RX', members: '', events: [eventMock] };
+const eventMock = {
+  id: 2, order: 1, ranking: 1, reps: 120,
+};
+const teamMock = {
+  name: 'team', category: 'RX', members: '', events: [eventMock],
+};
 const contextMock = {
   db: {
     query: {
@@ -54,9 +58,7 @@ describe('Query', () => {
   });
 
   it('should return query health check', () => {
-    expect(Query.info()).toEqual(
-      `API responsible for a custom crossfit leaderboard`,
-    );
+    expect(Query.info()).toEqual('API responsible for a custom crossfit leaderboard');
   });
 
   it('should return feed of teams', () => {
@@ -160,30 +162,28 @@ describe('Mutation', () => {
       expect(contextMock.db.query.user).toHaveBeenCalledTimes(1);
       expect(contextMock.db.query.user).toHaveBeenCalledWith({
         where: { email: 'cross@fit' },
-      }, `{ id password }`);
+      }, '{ id password }');
       expect(bcrypt.compare).toHaveBeenCalledWith('pass1234', 'pass1234');
     });
 
-    it('should throw error for user not found', async () => {
+    it('should throw error for user not found', () => {
       contextMock.db.query.user.mockReturnValue(null);
-      return await Mutation.login({}, {
+      return Mutation.login({}, {
         email: 'cross@fit',
         password: 'pass1234',
       }, contextMock, infoMock).catch(e =>
-        expect(e).toEqual(new Error(`No such user found`))
-      );
+        expect(e).toEqual(new Error('No such user found')));
     });
 
-    it('should throw error for invalid password', async () => {
+    it('should throw error for invalid password', () => {
       contextMock.db.query.user.mockReturnValue(userMock);
       bcrypt.compare.mockResolvedValue(false);
 
-      return await Mutation.login({}, {
+      return Mutation.login({}, {
         email: 'cross@fit',
         password: 'pass1234',
       }, contextMock, infoMock).catch(e =>
-        expect(e).toEqual(new Error(`Invalid password`))
-      );
+        expect(e).toEqual(new Error('Invalid password')));
     });
   });
 
@@ -226,16 +226,16 @@ describe('Mutation', () => {
     it('should set teams score', async () => {
       const result = await Mutation.setTeamsScore({}, { category: 'RX' }, contextMock, infoMock);
 
-      expect(result).toEqual(`RX ranking updated`);
+      expect(result).toEqual('RX ranking updated');
       expect(contextMock.db.query.teams).toHaveBeenCalledTimes(1);
       expect(contextMock.db.query.teams).toHaveBeenCalledWith({
         where: { category: 'RX' },
-      }, `{ id name finalScore events { ranking } }`);
+      }, '{ id name finalScore events { ranking } }');
       expect(contextMock.db.mutation.updateTeam).toHaveBeenCalledTimes(1);
       expect(contextMock.db.mutation.updateTeam).toHaveBeenCalledWith({
         where: { name: teamMock.name },
         data: { finalScore: eventMock.ranking },
-      }, `{ id finalScore }`);
+      }, '{ id finalScore }');
     });
   });
 
@@ -250,7 +250,7 @@ describe('Mutation', () => {
       expect(contextMock.db.query.team).toHaveBeenCalledTimes(1);
       expect(contextMock.db.query.team).toHaveBeenCalledWith({
         where: { name: teamMock.name },
-      }, `{ id }`);
+      }, '{ id }');
       expect(contextMock.db.mutation.createEvent).toHaveBeenCalledTimes(1);
       expect(contextMock.db.mutation.createEvent).toHaveBeenCalledWith({
         data: {
@@ -271,7 +271,7 @@ describe('Mutation', () => {
       expect(contextMock.db.query.team).toHaveBeenCalledTimes(1);
       expect(contextMock.db.query.team).toHaveBeenCalledWith({
         where: { name: teamMock.name },
-      }, `{ id }`);
+      }, '{ id }');
 
       expect(contextMock.db.mutation.updateEvent).toHaveBeenCalledTimes(1);
       expect(contextMock.db.mutation.updateEvent).toHaveBeenCalledWith({
@@ -280,14 +280,13 @@ describe('Mutation', () => {
       }, infoMock);
     });
 
-    it('should\'not update event with a not found team', async () => {
+    it('should\'not update event with a not found team', () => {
       contextMock.db.query.team.mockResolvedValue(false);
 
-      return await Mutation.updateEvent({}, {
-        team: teamMock.name
+      return Mutation.updateEvent({}, {
+        team: teamMock.name,
       }, contextMock, infoMock).catch(e =>
-        expect(e).toEqual(new Error(`You are trying to use undefined team`))
-      );
+        expect(e).toEqual(new Error('You are trying to use undefined team')));
     });
 
     it('should delete event', async () => {
@@ -302,7 +301,7 @@ describe('Mutation', () => {
       expect(contextMock.db.query.team).toHaveBeenCalledTimes(1);
       expect(contextMock.db.query.team).toHaveBeenCalledWith({
         where: { name: teamMock.name },
-      }, `{ id }`);
+      }, '{ id }');
 
       expect(contextMock.db.mutation.deleteEvent).toHaveBeenCalledTimes(1);
       expect(contextMock.db.mutation.deleteEvent).toHaveBeenCalledWith({
@@ -310,14 +309,13 @@ describe('Mutation', () => {
       }, infoMock);
     });
 
-    it('should\'not delete event with not found team', async () => {
+    it('should\'not delete event with not found team', () => {
       contextMock.db.query.team.mockResolvedValue(false);
 
-      return await Mutation.deleteEvent({}, {
-        team: teamMock.name
+      return Mutation.deleteEvent({}, {
+        team: teamMock.name,
       }, contextMock, infoMock).catch(e =>
-        expect(e).toEqual(new Error(`You are trying to use undefined team`))
-      );
+        expect(e).toEqual(new Error('You are trying to use undefined team')));
     });
 
     it('should set event ranking', async () => {
@@ -333,13 +331,13 @@ describe('Mutation', () => {
           order: eventMock.order,
           fromTeam: { category: teamMock.category },
         },
-      }, `{ id order time reps weight ranking fromTeam { category }}`);
+      }, '{ id order time reps weight ranking fromTeam { category }}');
 
       expect(contextMock.db.mutation.updateEvent).toHaveBeenCalledTimes(1);
       expect(contextMock.db.mutation.updateEvent).toHaveBeenCalledWith({
         where: { id: eventMock.id },
         data: { ranking: eventMock.ranking },
-      }, `{ id ranking }`);
+      }, '{ id ranking }');
     });
   });
 

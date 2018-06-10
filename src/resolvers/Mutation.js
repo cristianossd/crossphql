@@ -1,14 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const _ = require('lodash');
+const { sumBy, sortBy, get } = require('lodash');
 const { APP_SECRET, getUserId } = require('../utils');
 
 // User
-const signup = async (root, args, context, info) => {
+const signup = async (root, args, context) => {
   const password = await bcrypt.hash(args.password, 10);
   const user = await context.db.mutation.createUser({
     data: { ...args, password },
-  }, `{ id }`);
+  }, '{ id }');
   const token = jwt.sign({ userId: user.id }, APP_SECRET);
 
   return {
@@ -17,15 +17,15 @@ const signup = async (root, args, context, info) => {
   };
 };
 
-const login = async (root, args, context, info) => {
-  const user = await context.db.query.user({ where: { email: args.email } }, `{ id password }`);
+const login = async (root, args, context) => {
+  const user = await context.db.query.user({ where: { email: args.email } }, '{ id password }');
   if (!user) {
-    throw new Error(`No such user found`);
+    throw new Error('No such user found');
   }
 
   const valid = await bcrypt.compare(args.password, user.password);
   if (!valid) {
-    throw new Error(`Invalid password`);
+    throw new Error('Invalid password');
   }
 
   const token = jwt.sign({ userId: user.id }, APP_SECRET);
@@ -66,17 +66,17 @@ const deleteTeam = async (root, args, context, info) => {
   }, info);
 };
 
-const setTeamsScore = async (root, args, context, info) => {
+const setTeamsScore = async (root, args, context) => {
   getUserId(context);
 
   const teams = await context.db.query.teams({
     where: {
       category: args.category,
     },
-  }, `{ id name finalScore events { ranking } }`);
+  }, '{ id name finalScore events { ranking } }');
 
-  const scoredTeams = teams.map(team => {
-    const finalScore = _.sumBy(team.events, (event) => event.ranking);
+  const scoredTeams = teams.map((team) => {
+    const finalScore = sumBy(team.events, event => event.ranking);
     return {
       id: team.id,
       name: team.name,
@@ -84,16 +84,16 @@ const setTeamsScore = async (root, args, context, info) => {
     };
   });
 
-  await Promise.all(scoredTeams.map((team) => (
+  await Promise.all(scoredTeams.map(team => (
     context.db.mutation.updateTeam({
       where: { name: team.name },
       data: { finalScore: team.finalScore },
-    }, `{ id finalScore }`)
-  ))).catch(err => {
-    throw new Error('Retry team final scores setup');
+    }, '{ id finalScore }')
+  ))).catch((err) => {
+    throw new Error(err.message);
   });
 
-  return `${args.category} ranking updated`
+  return `${args.category} ranking updated`;
 };
 
 // Event
@@ -102,7 +102,7 @@ const createEvent = async (root, args, context, info) => {
 
   const team = await context.db.query.team({
     where: { name: args.teamName },
-  }, `{ id }`);
+  }, '{ id }');
 
   if (!team) {
     throw new Error('You are trying to assign undefined team');
@@ -113,7 +113,7 @@ const createEvent = async (root, args, context, info) => {
       order: args.order,
       fromTeam: { connect: { id: team.id } },
     },
-  }, info)
+  }, info);
 };
 
 const updateEvent = async (root, args, context, info) => {
@@ -121,14 +121,16 @@ const updateEvent = async (root, args, context, info) => {
 
   const team = await context.db.query.team({
     where: { name: args.teamName },
-  }, `{ id }`);
+  }, '{ id }');
 
   if (!team) {
     throw new Error('You are trying to use undefined team');
   }
 
   const eventId = args.id;
+  // eslint-disable-next-line no-param-reassign
   delete args.id;
+  // eslint-disable-next-line no-param-reassign
   delete args.teamName;
 
   return context.db.mutation.updateEvent({
@@ -142,7 +144,7 @@ const deleteEvent = async (root, args, context, info) => {
 
   const team = await context.db.query.team({
     where: { name: args.teamName },
-  }, `{ id }`);
+  }, '{ id }');
 
   if (!team) {
     throw new Error('You are trying to use undefined team');
@@ -153,7 +155,7 @@ const deleteEvent = async (root, args, context, info) => {
   }, info);
 };
 
-const setEventRanking = async (root, args, context, info) => {
+const setEventRanking = async (root, args, context) => {
   getUserId(context);
 
   const events = await context.db.query.events({
@@ -161,23 +163,23 @@ const setEventRanking = async (root, args, context, info) => {
       order: args.order,
       fromTeam: { category: args.category },
     },
-  }, `{ id order time reps weight ranking fromTeam { category }}`);
+  }, '{ id order time reps weight ranking fromTeam { category }}');
 
-  const rankedEvents = _.sortBy(events, (event) => {
+  const rankedEvents = sortBy(events, (event) => {
     const { time, reps, weight } = event;
 
     if (time) {
       const [minutes, seconds] = time.split(':').map(unit => parseInt(unit, 10));
-      return (minutes*60 + seconds);
+      return ((minutes * 60) + seconds);
     } else if (reps) {
       return -reps;
-    } else if (weight) {
-      return -weight;
     }
+
+    return -weight;
   });
 
   await Promise.all(rankedEvents.map((event, index) => {
-    const previous = _.get(rankedEvents, index - 1, {});
+    const previous = get(rankedEvents, index - 1, {});
     const equalsResult = (
       (previous.time && previous.time === event.time)
       || (previous.reps && previous.reps === event.reps)
@@ -186,33 +188,29 @@ const setEventRanking = async (root, args, context, info) => {
 
     const ranking = equalsResult ? index : index + 1;
 
-    context.db.mutation.updateEvent({
+    return context.db.mutation.updateEvent({
       where: { id: event.id },
       data: { ranking },
-    }, `{ id ranking }`)
-  })).catch(err => {
-    throw new Error('Retry event ranking setup');
+    }, '{ id ranking }');
+  })).catch((err) => {
+    throw new Error(err.message);
   });
 
-  return `${args.category} ranking updated`
+  return `${args.category} ranking updated`;
 };
 
 // Hidden
-const createHidden = async (root, args, context, info) => {
-  return context.db.mutation.createHidden({
-    data: {
-      name: args.name,
-      flag: args.flag,
-    },
-  }, info);
-};
+const createHidden = async (root, args, context, info) => context.db.mutation.createHidden({
+  data: {
+    name: args.name,
+    flag: args.flag,
+  },
+}, info);
 
-const updateHidden = async (root, args, context, info) => {
-  return context.db.mutation.updateHidden({
-    where: { name: args.name },
-    data: { flag: args.flag },
-  }, info);
-};
+const updateHidden = async (root, args, context, info) => context.db.mutation.updateHidden({
+  where: { name: args.name },
+  data: { flag: args.flag },
+}, info);
 
 module.exports = {
   signup,
