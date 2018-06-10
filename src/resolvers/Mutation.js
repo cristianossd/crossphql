@@ -161,7 +161,7 @@ const setEventRanking = async (root, args, context, info) => {
       order: args.order,
       fromTeam: { category: args.category },
     },
-  }, `{  id order time reps weight ranking fromTeam { category }}`);
+  }, `{ id order time reps weight ranking fromTeam { category }}`);
 
   const rankedEvents = _.sortBy(events, (event) => {
     const { time, reps, weight } = event;

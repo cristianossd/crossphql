@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { head } = require('lodash');
 
 const Query = require('../Query');
 const AuthPayload = require('../AuthPayload');
@@ -9,32 +8,33 @@ const { APP_SECRET, getUserId } = require('../../utils');
 
 const TOKEN = '1fn9j983ef8923m89';
 const infoMock = `{ id }`;
-const hiddenMock = { flag: true };
+const hiddenMock = { name: 'hiddenResult', flag: true };
 const userMock = { id: 1, token: TOKEN, password: 'pass1234' };
-const teamMock = { name: 'team', category: 'RX', members: '' };
-const teamsMock = {
-  data: {
-    teams: [
-      { name: 'Maral', category: 'RX' },
-      { name: 'Mayhem', category: 'RX' },
-    ],
-  },
-};
-
+const eventMock = { id: 2, order: 1, ranking: 1, reps: 120 };
+const teamMock = { name: 'team', category: 'RX', members: '', events: [eventMock] };
 const contextMock = {
   db: {
     query: {
-      teams: jest.fn().mockReturnValue(teamsMock),
-      team: jest.fn().mockReturnValue(head(teamsMock.data.teams)),
+      teams: jest.fn().mockReturnValue([teamMock]),
+      team: jest.fn().mockReturnValue(teamMock),
       hidden: jest.fn().mockReturnValue(hiddenMock),
       user: jest.fn().mockReturnValue(userMock),
+      events: jest.fn().mockReturnValue([eventMock]),
     },
 
     mutation: {
       createUser: jest.fn().mockReturnValue(userMock),
+
       createTeam: jest.fn().mockReturnValue(teamMock),
       updateTeam: jest.fn().mockReturnValue(teamMock),
       deleteTeam: jest.fn().mockReturnValue(teamMock),
+
+      createEvent: jest.fn().mockReturnValue(eventMock),
+      updateEvent: jest.fn().mockReturnValue(eventMock),
+      deleteEvent: jest.fn().mockReturnValue(eventMock),
+
+      createHidden: jest.fn().mockReturnValue(hiddenMock),
+      updateHidden: jest.fn().mockReturnValue(hiddenMock),
     },
   },
 };
@@ -62,7 +62,7 @@ describe('Query', () => {
   it('should return feed of teams', () => {
     const result = Query.feed({}, {}, contextMock, infoMock);
 
-    expect(result).toEqual(teamsMock);
+    expect(result).toEqual([teamMock]);
     expect(contextMock.db.query.teams).toHaveBeenCalledTimes(1);
     expect(contextMock.db.query.teams).toHaveBeenCalledWith({}, infoMock);
   });
@@ -72,7 +72,7 @@ describe('Query', () => {
       category: 'RX',
     }, contextMock, infoMock);
 
-    expect(result).toEqual(teamsMock);
+    expect(result).toEqual([teamMock]);
     expect(contextMock.db.query.teams).toHaveBeenCalledTimes(1);
     expect(contextMock.db.query.teams).toHaveBeenCalledWith({
       where: { category: 'RX' },
@@ -85,7 +85,7 @@ describe('Query', () => {
       name: 'Maral',
     }, contextMock, infoMock);
 
-    expect(result).toEqual(head(teamsMock.data.teams));
+    expect(result).toEqual(teamMock);
     expect(contextMock.db.query.team).toHaveBeenCalledTimes(1);
     expect(contextMock.db.query.team).toHaveBeenCalledWith({
       where: { name: 'Maral' },
@@ -220,6 +220,154 @@ describe('Mutation', () => {
       expect(contextMock.db.mutation.deleteTeam).toHaveBeenCalledTimes(1);
       expect(contextMock.db.mutation.deleteTeam).toHaveBeenCalledWith({
         where: { name: teamMock.name },
+      }, infoMock);
+    });
+
+    it('should set teams score', async () => {
+      const result = await Mutation.setTeamsScore({}, { category: 'RX' }, contextMock, infoMock);
+
+      expect(result).toEqual(`RX ranking updated`);
+      expect(contextMock.db.query.teams).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.query.teams).toHaveBeenCalledWith({
+        where: { category: 'RX' },
+      }, `{ id name finalScore events { ranking } }`);
+      expect(contextMock.db.mutation.updateTeam).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.updateTeam).toHaveBeenCalledWith({
+        where: { name: teamMock.name },
+        data: { finalScore: eventMock.ranking },
+      }, `{ id finalScore }`);
+    });
+  });
+
+  describe('Event', () => {
+    it('should create event', async () => {
+      const result = await Mutation.createEvent({}, {
+        order: eventMock.order,
+        teamName: teamMock.name,
+      }, contextMock, infoMock);
+
+      expect(result).toEqual(eventMock);
+      expect(contextMock.db.query.team).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.query.team).toHaveBeenCalledWith({
+        where: { name: teamMock.name },
+      }, `{ id }`);
+      expect(contextMock.db.mutation.createEvent).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.createEvent).toHaveBeenCalledWith({
+        data: {
+          order: eventMock.order,
+          fromTeam: { connect: { id: teamMock.id } },
+        },
+      }, infoMock);
+    });
+
+    it('should update event', async () => {
+      const result = await Mutation.updateEvent({}, {
+        id: eventMock.id,
+        teamName: teamMock.name,
+        ranking: eventMock.ranking,
+      }, contextMock, infoMock);
+
+      expect(result).toEqual(eventMock);
+      expect(contextMock.db.query.team).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.query.team).toHaveBeenCalledWith({
+        where: { name: teamMock.name },
+      }, `{ id }`);
+
+      expect(contextMock.db.mutation.updateEvent).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.updateEvent).toHaveBeenCalledWith({
+        where: { id: eventMock.id },
+        data: { ranking: eventMock.ranking },
+      }, infoMock);
+    });
+
+    it('should\'not update event with a not found team', async () => {
+      contextMock.db.query.team.mockResolvedValue(false);
+
+      return await Mutation.updateEvent({}, {
+        team: teamMock.name
+      }, contextMock, infoMock).catch(e =>
+        expect(e).toEqual(new Error(`You are trying to use undefined team`))
+      );
+    });
+
+    it('should delete event', async () => {
+      contextMock.db.query.team.mockResolvedValue(teamMock);
+
+      const result = await Mutation.deleteEvent({}, {
+        id: eventMock.id,
+        teamName: teamMock.name,
+      }, contextMock, infoMock);
+
+      expect(result).toEqual(eventMock);
+      expect(contextMock.db.query.team).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.query.team).toHaveBeenCalledWith({
+        where: { name: teamMock.name },
+      }, `{ id }`);
+
+      expect(contextMock.db.mutation.deleteEvent).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.deleteEvent).toHaveBeenCalledWith({
+        where: { id: eventMock.id },
+      }, infoMock);
+    });
+
+    it('should\'not delete event with not found team', async () => {
+      contextMock.db.query.team.mockResolvedValue(false);
+
+      return await Mutation.deleteEvent({}, {
+        team: teamMock.name
+      }, contextMock, infoMock).catch(e =>
+        expect(e).toEqual(new Error(`You are trying to use undefined team`))
+      );
+    });
+
+    it('should set event ranking', async () => {
+      const result = await Mutation.setEventRanking({}, {
+        order: eventMock.order,
+        category: teamMock.category,
+      }, contextMock, infoMock);
+
+      expect(result).toEqual(`${teamMock.category} ranking updated`);
+      expect(contextMock.db.query.events).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.query.events).toHaveBeenCalledWith({
+        where: {
+          order: eventMock.order,
+          fromTeam: { category: teamMock.category },
+        },
+      }, `{ id order time reps weight ranking fromTeam { category }}`);
+
+      expect(contextMock.db.mutation.updateEvent).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.updateEvent).toHaveBeenCalledWith({
+        where: { id: eventMock.id },
+        data: { ranking: eventMock.ranking },
+      }, `{ id ranking }`);
+    });
+  });
+
+  describe('Hidden flags', () => {
+    it('should create hidden flag', async () => {
+      const result = await Mutation.createHidden({}, {
+        name: hiddenMock.name,
+        flag: hiddenMock.flag,
+      }, contextMock, infoMock);
+
+      expect(result).toEqual(hiddenMock);
+      expect(contextMock.db.mutation.createHidden).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.createHidden).toHaveBeenCalledWith({
+        data: hiddenMock,
+      }, infoMock);
+    });
+
+    it('should update hidden flag', async () => {
+      const result = await Mutation.updateHidden({}, {
+        name: hiddenMock.name,
+        flag: hiddenMock.flag,
+      }, contextMock, infoMock);
+
+      expect(result).toEqual(hiddenMock);
+      expect(contextMock.db.mutation.updateHidden).toHaveBeenCalledTimes(1);
+      expect(contextMock.db.mutation.updateHidden).toHaveBeenCalledWith({
+        where: { name: hiddenMock.name },
+        data: { flag: hiddenMock.flag },
       }, infoMock);
     });
   });
