@@ -176,12 +176,21 @@ const setEventRanking = async (root, args, context, info) => {
     }
   });
 
-  await Promise.all(rankedEvents.map((event, index) => (
+  await Promise.all(rankedEvents.map((event, index) => {
+    const previous = _.get(rankedEvents, index - 1, {});
+    const equalsResult = (
+      (previous.time && previous.time === event.time)
+      || (previous.reps && previous.reps === event.reps)
+      || (previous.weight && previous.weight === event.weight)
+    );
+
+    const ranking = equalsResult ? index : index + 1;
+
     context.db.mutation.updateEvent({
       where: { id: event.id },
-      data: { ranking: index + 1 },
+      data: { ranking },
     }, `{ id ranking }`)
-  ))).catch(err => {
+  })).catch(err => {
     throw new Error('Retry event ranking setup');
   });
 
